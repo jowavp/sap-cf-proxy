@@ -1,0 +1,38 @@
+{
+  "name": "sap-cf-proxy",
+  "version": "0.0.1",
+  "description": "Proxy all destinations in SAP BTP Cloud foundry account",
+  "main": "index.js",
+  "scripts": {
+    "start": "node dist/proxy/index.js",
+    "build": "run-s build:tsc build:sshenabler",
+    "build:tsc": "tsc",
+    "build:sshenabler": "copyfiles -f ts/sshenabler/*.json dist/sshenabler",
+    "build:mta": "mbt build",
+    "deploy:cf": "cross-var cf deploy mta_archives/sshenabler_$npm_package_version.mtar",
+    "start:sshtunnel": "cf enable-ssh sshenabler && cf restart sshenabler && cf ssh sshenabler -L 20003:connectivityproxy.internal.cf.eu10.hana.ondemand.com:20003"
+  },
+  "author": "Joachim Van Praet",
+  "license": "ISC",
+  "dependencies": {
+    "@sap/xsenv": "^3.1.0",
+    "axios": "^0.21.1",
+    "client-oauth2": "^4.3.3",
+    "dotenv": "^8.2.0",
+    "http": "0.0.1-security",
+    "http-proxy": "^1.18.1",
+    "pino": "^6.11.2",
+    "pino-pretty": "^4.7.1",
+    "sap-cf-destconn": "0.0.29",
+    "typescript": "^4.2.3"
+  },
+  "devDependencies": {
+    "@types/http-proxy": "^1.17.5",
+    "@types/node": "^14.14.34",
+    "@types/pino": "^6.3.6",
+    "@types/sap__xsenv": "^2.0.2",
+    "copyfiles": "^2.4.1",
+    "cross-var": "^1.1.0",
+    "npm-run-all": "^4.1.5"
+  }
+}

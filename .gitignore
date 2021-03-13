@@ -1,0 +1,17 @@
+.idea/
+gen/
+.gen/
+node_modules/
+target/
+*.db
+.DS_Store
+_out
+
+default-env*.json
+default-services*.json
+
+/mta_archives/
+/mta-op*
+Makefile*
+
+.env

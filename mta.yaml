@@ -1,0 +1,43 @@
+ID: sshenabler
+_schema-version: 3.2.0
+description: Dummy application to create an SSH tunnel to serve destinations
+version: 0.0.1
+parameters:
+  enable-parallel-deployments: true
+build-parameters:
+  before-all:
+   - builder: custom
+     commands:
+      - npm install --production
+      - npm run build
+
+modules:
+  - name: sshenabler
+    type: nodejs
+    path: dist/sshenabler
+    build-parameters:
+      builder: custom
+      commands:
+        - npm install
+    parameters:
+      disk-quota: 128M
+      memory: 32M
+    requires:
+      - name: destination_service
+      - name: uaa_service
+      - name: connectivity_service
+resources:
+  - name: destination_service
+    type: destination
+    parameters:
+      service-plan: lite
+      service: destination
+  - name: connectivity_service
+    type: connectivity
+  - name: uaa_service
+    type: org.cloudfoundry.managed-service
+    parameters:
+      path: ./xs-security.json
+      service-plan: application
+      service: xsuaa
+  
