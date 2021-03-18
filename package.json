@@ -13,7 +13,7 @@
     "start:sshtunnel": "cf enable-ssh sshenabler && cf restart sshenabler && cf ssh sshenabler -L 20003:connectivityproxy.internal.cf.eu10.hana.ondemand.com:20003"
   },
   "author": "Joachim Van Praet",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "dependencies": {
     "@sap/xsenv": "^3.1.0",
     "axios": "^0.21.1",
