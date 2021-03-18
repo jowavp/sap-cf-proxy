@@ -21,7 +21,7 @@ const proxy = httpProxy.createProxyServer({
 
 const config = {
     proxyport: process.env.PORT || 5050,
-    defaultDestination: process.env.DEFAULT_DESTINATION || "FG2",
+    defaultDestination: process.env.DEFAULT_DESTINATION || "SAP_ABAP_BACKEND",
     destinationPropertyName: (process.env.DESTINATION_PROPERTY_NAME || "X-SAP-BTP-destination").toLowerCase(),
     cfproxy: {
         host: process.env.CFPROXY_HOST || '127.0.0.1',
