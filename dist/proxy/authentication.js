@@ -25,7 +25,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getAuthenticationType = exports.createTokenForDestination = exports.basicToJWT = void 0;
 const xsenv = __importStar(require("@sap/xsenv"));
 const axios_1 = __importDefault(require("axios"));
-exports.basicToJWT = async (authorization) => {
+const basicToJWT = async (authorization) => {
     // check if a xsuaa is linked to this project.
     const { xsuaa } = xsenv.getServices({
         xsuaa: {
@@ -41,6 +41,7 @@ exports.basicToJWT = async (authorization) => {
     const jwtToken = await fetchToken(xsuaa, authorization);
     return `${jwtToken.token_type} ${jwtToken.access_token}`;
 };
+exports.basicToJWT = basicToJWT;
 async function createTokenForDestination(dc) {
     const scope = convertScope(dc.Scope || dc.scope);
     const audience = dc.oauth_audience;
@@ -87,9 +88,10 @@ function convertScope(scope) {
         return acc;
     }, {});
 }
-exports.getAuthenticationType = (authorization) => {
+const getAuthenticationType = (authorization) => {
     return /bearer/igm.test(authorization) ? "bearer" : /basic/igm.test(authorization) ? "basic" : "none";
 };
+exports.getAuthenticationType = getAuthenticationType;
 async function fetchToken(xsuaa, credentials) {
     const tokenBaseUrl = `${xsuaa.url}`;
     const token = (await axios_1.default({

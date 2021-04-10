@@ -6,8 +6,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const http_1 = __importDefault(require("http"));
 const http_proxy_1 = __importDefault(require("http-proxy"));
 const pino_1 = __importDefault(require("pino"));
+const dotenv_1 = __importDefault(require("dotenv"));
+const core_1 = require("@sap-cloud-sdk/core");
 const sap_cf_destconn_1 = require("sap-cf-destconn");
 const authentication_1 = require("./authentication");
+dotenv_1.default.config();
 const logger = pino_1.default({
     level: process.env.LOG_LEVEL || "info",
     prettyPrint: process.env.LOG_AS_TEXT !== "false",
@@ -17,7 +20,7 @@ const proxy = http_proxy_1.default.createProxyServer({
 });
 const config = {
     proxyport: process.env.PORT || 5050,
-    defaultDestination: process.env.DEFAULT_DESTINATION || "FG2",
+    defaultDestination: process.env.DEFAULT_DESTINATION || "SAP_ABAP_BACKEND",
     destinationPropertyName: (process.env.DESTINATION_PROPERTY_NAME || "X-SAP-BTP-destination").toLowerCase(),
     cfproxy: {
         host: process.env.CFPROXY_HOST || '127.0.0.1',
@@ -36,17 +39,6 @@ proxy.on("proxyReq", function (proxyReq, req, res, options) {
     Object.entries(newHeaders).forEach(function ([key, value]) {
         proxyReq.setHeader(key, value);
     });
-    // convert basic auth to JWT token if XSUAA is bound
-    const authorization = req.headers.authorization || "";
-    const authenticationType = /bearer/igm.test(authorization) ? "bearer" : /basic/igm.test(authorization) ? "basic" : "none";
-    logger.info(`Current Auth type: ${authenticationType}`);
-    if (authenticationType === "basic") {
-        logger.info(`Convert basic auth`);
-        const jwtToken = authentication_1.basicToJWT(authorization);
-    }
-    else if (authenticationType === "none") {
-        // throw 401 to allow user to fill in username passsword
-    }
 });
 const server = http_1.default.createServer(async (req, res) => {
     const authorization = req.headers.authorization || "";
@@ -66,6 +58,7 @@ const server = http_1.default.createServer(async (req, res) => {
     logger.info(`Request entered the building: proxy to ${destinationName}`);
     // read the destination on cloud foundry
     try {
+        const sdkDestination = await core_1.getDestination(destinationName);
         const destination = await sap_cf_destconn_1.readDestination(destinationName, authorizationHeader);
         const destinationConfiguration = destination.destinationConfiguration;
         logger.info(`Forwarding this request to ${destinationConfiguration.URL}`);
@@ -95,7 +88,7 @@ const server = http_1.default.createServer(async (req, res) => {
         //
         if (destination.destinationConfiguration.ProxyType.toLowerCase() === "onpremise") {
             logger.info(`This is an on premise request. Let's send it over the SSH tunnel.`);
-            const proxy = await (destination.destinationConfiguration.Authentication === "PrincipalPropagation" ?
+            const proxy = await (destinationConfiguration.Authentication === "PrincipalPropagation" ?
                 sap_cf_destconn_1.readConnectivity(destination.destinationConfiguration.CloudConnectorLocationId, authorizationHeader) :
                 sap_cf_destconn_1.readConnectivity(destination.destinationConfiguration.CloudConnectorLocationId));
             target = {
@@ -108,6 +101,9 @@ const server = http_1.default.createServer(async (req, res) => {
                 host: config.cfproxy.host,
                 port: config.cfproxy.port
             };
+            if (destinationConfiguration.Authentication === "PrincipalPropagation") {
+                delete req.headers.authorization;
+            }
         }
         proxy.web(req, res, { target });
     }

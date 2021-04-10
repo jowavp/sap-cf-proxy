@@ -2,6 +2,7 @@ import http from 'http'
 import httpProxy from 'http-proxy'
 import pino from 'pino'
 import dotenv from 'dotenv'
+import { getDestination } from '@sap-cloud-sdk/core'
 
 import { IHTTPDestinationConfiguration, readConnectivity, readDestination } from 'sap-cf-destconn'
 import { basicToJWT, getAuthenticationType, createTokenForDestination } from './authentication'
@@ -69,6 +70,7 @@ const server = http.createServer(async (req, res) => {
 
     // read the destination on cloud foundry
     try {
+        const sdkDestination = await getDestination(destinationName);
         const destination = await readDestination<IHTTPDestinationConfiguration>( destinationName, authorizationHeader )
         const destinationConfiguration = destination.destinationConfiguration;
         
@@ -134,4 +136,3 @@ const server = http.createServer(async (req, res) => {
 
 logger.info(`proxy listening on port     : ${config.proxyport}`);
 server.listen(config.proxyport);
-  

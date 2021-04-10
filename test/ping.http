@@ -1,10 +1,17 @@
-### Test public endpoind via sap-cf-proxy
+### Test public endpoind using a no authentication destination via sap-cf-proxy
 GET {{$dotenv sapcpproxy}}/sap/public/ping
 X-SAP-BTP-destination: SAP_ABAP_BACKEND_NO_AUTH
 Authorization: Basic {{$dotenv sapid_username}}:{{$dotenv sapid_password}}
 
-### Test authenticated endpoint via sap-cf-proxy
+### Test authenticated endpoint using a basic auth destination via sap-cf-proxy
 GET {{$dotenv sapcpproxy}}/sap/bc/ping
 X-SAP-BTP-destination: SAP_ABAP_BACKEND_BASIC_AUTH
+Accept-Language: en
+Authorization: Basic {{$dotenv sapid_username}}:{{$dotenv sapid_password}}
+
+
+### Test authenticated endpoint using a principal propagation destination via sap-cf-proxy
+GET {{$dotenv sapcpproxy}}/sap/bc/ping
+X-SAP-BTP-destination: SAP_ABAP_BACKEND
 Accept-Language: en
 Authorization: Basic {{$dotenv sapid_username}}:{{$dotenv sapid_password}}

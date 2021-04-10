@@ -15,6 +15,7 @@
   "author": "Joachim Van Praet",
   "license": "Apache-2.0",
   "dependencies": {
+    "@sap-cloud-sdk/core": "^1.41.0",
     "@sap/xsenv": "^3.1.0",
     "axios": "^0.21.1",
     "client-oauth2": "^4.3.3",
