@@ -4,7 +4,7 @@ import pino from 'pino'
 import dotenv from 'dotenv'
 import { getDestination } from '@sap-cloud-sdk/core'
 
-import { IHTTPDestinationConfiguration, readConnectivity, readDestination } from 'sap-cf-destconn'
+import { IHTTPDestinationConfiguration, readDestination } from 'sap-cf-destconn'
 import { basicToJWT, getAuthenticationType, createTokenForDestination } from './authentication'
 
 type IAuthenticationType = "bearer" | "basic" | "none";
@@ -81,6 +81,10 @@ const server = http.createServer(async (req, res) => {
         }
 
         //
+        if (sdkDestination.authentication === "BasicAuthentication") {
+            req.headers.authorization = "Basic " + Buffer.from(`${sdkDestination.username}:${sdkDestination.password}`, 'ascii').toString('base64');
+        }
+
         if (sdkDestination.authentication === "OAuth2ClientCredentials") {
             const destination = await readDestination<IHTTPDestinationConfiguration>( destinationName, authorizationHeader )
             const destinationConfiguration = destination.destinationConfiguration;
@@ -108,22 +112,28 @@ const server = http.createServer(async (req, res) => {
             
             logger.info(`This is an on premise request. Let's send it over the SSH tunnel.`);
             
-            const proxy = await (sdkDestination.authentication === "PrincipalPropagation" ?
-             readConnectivity(sdkDestination.cloudConnectorLocationId, authorizationHeader) :
-             readConnectivity(sdkDestination.cloudConnectorLocationId));
-            
             target = {
                 path: `${sdkDestination.url}${req.url}`,
                 headers: {
-                    ...target.headers,
-                    ...proxy.headers
+                    ...target.headers
                 },
-                protocol: proxy.proxy.protocol,
+                protocol: sdkDestination.proxyConfiguration!.protocol,
                 host: config.cfproxy.host,
                 port: config.cfproxy.port
             }
+            if(sdkDestination.cloudConnectorLocationId) {
+                target.headers["SAP-Connectivity-SCC-Location_ID"] = sdkDestination.cloudConnectorLocationId;
+            }
+
+            if(sdkDestination.proxyConfiguration) {
+                req.headers = {
+                    ...req.headers,
+                    ...sdkDestination.proxyConfiguration!.headers
+                };
+            }
 
             if (sdkDestination.authentication === "PrincipalPropagation") {
+                req.headers["SAP-Connectivity-Authentication"] = authorizationHeader;
                 delete req.headers.authorization;
             }
 
