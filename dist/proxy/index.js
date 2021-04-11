@@ -94,11 +94,6 @@ const server = http_1.default.createServer(async (req, res) => {
         //
         if (sdkDestination.proxyType.toLowerCase() === "onpremise") {
             logger.info(`This is an on premise request. Let's send it over the SSH tunnel.`);
-            /*
-            const proxy = await (sdkDestination.authentication === "PrincipalPropagation" ?
-             readConnectivity(sdkDestination.cloudConnectorLocationId, authorizationHeader) :
-             readConnectivity(sdkDestination.cloudConnectorLocationId));
-            */
             target = {
                 path: `${sdkDestination.url}${req.url}`,
                 headers: {
