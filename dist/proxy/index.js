@@ -59,15 +59,18 @@ const server = http_1.default.createServer(async (req, res) => {
     // read the destination on cloud foundry
     try {
         const sdkDestination = await core_1.getDestination(destinationName);
-        const destination = await sap_cf_destconn_1.readDestination(destinationName, authorizationHeader);
-        const destinationConfiguration = destination.destinationConfiguration;
-        logger.info(`Forwarding this request to ${destinationConfiguration.URL}`);
-        let target = new URL(destinationConfiguration.URL);
+        if (sdkDestination === null) {
+            throw Error(`Connection ${destinationName} not found`);
+        }
+        logger.info(`Forwarding this request to ${sdkDestination.url}`);
+        let target = new URL(sdkDestination.url);
         target.headers = {
             'host': target.host
         };
         //
-        if (destinationConfiguration.Authentication === "OAuth2ClientCredentials") {
+        if (sdkDestination.authentication === "OAuth2ClientCredentials") {
+            const destination = await sap_cf_destconn_1.readDestination(destinationName, authorizationHeader);
+            const destinationConfiguration = destination.destinationConfiguration;
             const clientCredentialsToken = await authentication_1.createTokenForDestination(destinationConfiguration);
             target.headers = {
                 ...target.headers,
@@ -75,24 +78,24 @@ const server = http_1.default.createServer(async (req, res) => {
             };
             delete req.headers.authorization;
         }
-        if (destination.authTokens && destination.authTokens[0] && !destination.authTokens[0].error) {
-            if (destination.authTokens[0].error) {
-                throw (new Error(destination.authTokens[0].error));
+        if (sdkDestination.authTokens && sdkDestination.authTokens[0] && !sdkDestination.authTokens[0].error) {
+            if (sdkDestination.authTokens[0].error) {
+                throw (new Error(sdkDestination.authTokens[0].error));
             }
             target.headers = {
                 ...target.headers,
-                Authorization: `${destination.authTokens[0].type} ${destination.authTokens[0].value}`
+                Authorization: `${sdkDestination.authTokens[0].type} ${sdkDestination.authTokens[0].value}`
             };
             delete req.headers.authorization;
         }
         //
-        if (destination.destinationConfiguration.ProxyType.toLowerCase() === "onpremise") {
+        if (sdkDestination.proxyType.toLowerCase() === "onpremise") {
             logger.info(`This is an on premise request. Let's send it over the SSH tunnel.`);
-            const proxy = await (destinationConfiguration.Authentication === "PrincipalPropagation" ?
-                sap_cf_destconn_1.readConnectivity(destination.destinationConfiguration.CloudConnectorLocationId, authorizationHeader) :
-                sap_cf_destconn_1.readConnectivity(destination.destinationConfiguration.CloudConnectorLocationId));
+            const proxy = await (sdkDestination.authentication === "PrincipalPropagation" ?
+                sap_cf_destconn_1.readConnectivity(sdkDestination.cloudConnectorLocationId, authorizationHeader) :
+                sap_cf_destconn_1.readConnectivity(sdkDestination.cloudConnectorLocationId));
             target = {
-                path: `${destination.destinationConfiguration.URL}${req.url}`,
+                path: `${sdkDestination.url}${req.url}`,
                 headers: {
                     ...target.headers,
                     ...proxy.headers
@@ -101,7 +104,7 @@ const server = http_1.default.createServer(async (req, res) => {
                 host: config.cfproxy.host,
                 port: config.cfproxy.port
             };
-            if (destinationConfiguration.Authentication === "PrincipalPropagation") {
+            if (sdkDestination.authentication === "PrincipalPropagation") {
                 delete req.headers.authorization;
             }
         }

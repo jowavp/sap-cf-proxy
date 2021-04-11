@@ -26,6 +26,7 @@ exports.getAuthenticationType = exports.createTokenForDestination = exports.basi
 const xsenv = __importStar(require("@sap/xsenv"));
 const axios_1 = __importDefault(require("axios"));
 const basicToJWT = async (authorization) => {
+    xsenv.loadEnv();
     // check if a xsuaa is linked to this project.
     const { xsuaa } = xsenv.getServices({
         xsuaa: {
