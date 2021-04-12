@@ -135,7 +135,6 @@ const server = http.createServer(async (req, res) => {
             logger.info(`This is an on premise request. Let's send it over the SSH tunnel.`);
             
             target = {
-                path: `${sdkDestination.url}${req.url}`,
                 headers: {
                     ...target.headers
                 },
