@@ -25,6 +25,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getAuthenticationType = exports.createTokenForDestination = exports.basicToJWT = void 0;
 const xsenv = __importStar(require("@sap/xsenv"));
 const axios_1 = __importDefault(require("axios"));
+const config = {
+    timeout: Number(process.env.TIMEOUT_JWT) || 3600, // 3600 - 60 Minutes
+};
+var jwtTokenCache = {};
 const basicToJWT = async (authorization) => {
     xsenv.loadEnv();
     // check if a xsuaa is linked to this project.
@@ -39,7 +43,17 @@ const basicToJWT = async (authorization) => {
     if ("string" === typeof authorization) {
         authorization = decodeBA(authorization);
     }
-    const jwtToken = await fetchToken(xsuaa, authorization);
+    let jwtToken;
+    if (!jwtTokenCache ||
+        !jwtTokenCache[authorization.username] ||
+        new Date().getTime() - config.timeout * 1000 > jwtTokenCache[authorization.username].timeout) {
+        jwtToken = await fetchToken(xsuaa, authorization);
+        jwtTokenCache[authorization.username] = {
+            jwtToken: jwtToken,
+            timeout: new Date().getTime()
+        };
+    }
+    jwtToken = jwtTokenCache[authorization.username].jwtToken;
     return `${jwtToken.token_type} ${jwtToken.access_token}`;
 };
 exports.basicToJWT = basicToJWT;
