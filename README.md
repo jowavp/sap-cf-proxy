@@ -14,6 +14,7 @@ Run the following commands in a terminal window:
 npm i
 npm run build:mta
 npm run deploy:cf
+npm run enable-ssh
 npm run start:sshtunnel
 ```
 Remark: The start ssh tunnel is currently forwarding the requests to 'connectivityproxy.internal.cf.eu10.hana.ondemand.com:20003' if you are not in the cf-eu10 region, you have to change this configuration in the package.json file.

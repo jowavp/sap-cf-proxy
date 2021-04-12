@@ -26,7 +26,8 @@ type ICredentials = {
 }
 
 export const basicToJWT = async (authorization: string | ICredentials) => {
-
+    
+    xsenv.loadEnv();
     // check if a xsuaa is linked to this project.
     const { xsuaa } = xsenv.getServices({
         xsuaa: {
