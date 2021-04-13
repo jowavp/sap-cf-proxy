@@ -18,7 +18,9 @@ const logger = pino_1.default({
 const proxy = http_proxy_1.default.createProxyServer({
     secure: false,
 });
+var destinationCache = {};
 const config = {
+    timeout: Number(process.env.TIMEOUT_DESTINATION) || 3600,
     proxyport: process.env.PORT || 5050,
     defaultDestination: process.env.DEFAULT_DESTINATION || "SAP_ABAP_BACKEND",
     destinationPropertyName: (process.env.DESTINATION_PROPERTY_NAME || "X-SAP-BTP-destination").toLowerCase(),
@@ -56,12 +58,23 @@ const server = http_1.default.createServer(async (req, res) => {
     // read the destination name
     const destinationName = [req.headers[config.destinationPropertyName]].flat()[0] || config.defaultDestination;
     logger.info(`Request entered the building: proxy to ${destinationName}`);
+    let sdkDestination;
     // read the destination on cloud foundry
     try {
-        const sdkDestination = await core_1.getDestination(destinationName);
-        if (sdkDestination === null) {
-            throw Error(`Connection ${destinationName} not found`);
+        if (!destinationCache ||
+            !destinationCache[destinationName] ||
+            new Date().getTime() - config.timeout * 1000 > destinationCache[destinationName].timeout) {
+            sdkDestination = await core_1.getDestination(destinationName);
+            if (sdkDestination === null) {
+                throw Error(`Connection ${destinationName} not found`);
+            }
+            logger.info(`Cache destination ${destinationName}`);
+            destinationCache[destinationName] = {
+                destination: sdkDestination,
+                timeout: new Date().getTime()
+            };
         }
+        sdkDestination = destinationCache[destinationName].destination;
         logger.info(`Forwarding this request to ${sdkDestination.url}`);
         let target = new URL(sdkDestination.url);
         target.headers = {

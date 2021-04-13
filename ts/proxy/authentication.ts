@@ -25,8 +25,20 @@ type ICredentials = {
     password: string;
 }
 
+const config = {
+    timeout: Number(process.env.TIMEOUT_JWT) || 3600, // 3600 - 60 Minutes
+};
+
+type IjwtTokenCache = { 
+    [authorization: string]: {
+        timeout: number,
+        jwtToken: any
+    } 
+};
+
+var jwtTokenCache: IjwtTokenCache =  {};
+
 export const basicToJWT = async (authorization: string | ICredentials) => {
-    
     xsenv.loadEnv();
     // check if a xsuaa is linked to this project.
     const { xsuaa } = xsenv.getServices({
@@ -38,14 +50,23 @@ export const basicToJWT = async (authorization: string | ICredentials) => {
     if (!xsuaa) {
         throw `No xsuaa service found`;
     }
-
     if ("string" === typeof authorization) {
         authorization = decodeBA(authorization);
     }
-    const jwtToken = await fetchToken(xsuaa, authorization);
-
+    let jwtToken;
+    if (
+        !jwtTokenCache ||
+        !jwtTokenCache[authorization.username] ||
+        new Date().getTime() - config.timeout * 1000 > jwtTokenCache[authorization.username].timeout
+    ) {
+        jwtToken = await fetchToken(xsuaa, authorization);
+        jwtTokenCache[authorization.username] = {
+            jwtToken: jwtToken,
+            timeout: new Date().getTime()
+        };
+    }
+    jwtToken = jwtTokenCache[authorization.username].jwtToken;
     return `${jwtToken.token_type} ${jwtToken.access_token}`;
-
 }
 
 

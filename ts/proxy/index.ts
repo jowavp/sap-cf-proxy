@@ -2,12 +2,18 @@ import http from 'http'
 import httpProxy from 'http-proxy'
 import pino from 'pino'
 import dotenv from 'dotenv'
-import { getDestination } from '@sap-cloud-sdk/core'
+import { getDestination, Destination } from '@sap-cloud-sdk/core'
 
 import { IHTTPDestinationConfiguration, readDestination } from 'sap-cf-destconn'
 import { basicToJWT, getAuthenticationType, createTokenForDestination } from './authentication'
 
 type IAuthenticationType = "bearer" | "basic" | "none";
+type IDestinationCache = { 
+    [destination: string]: {
+        timeout: number,
+        destination: Destination
+    } 
+};
 
 dotenv.config();
 
@@ -20,7 +26,10 @@ const proxy = httpProxy.createProxyServer({
     secure: false,
 })
 
+var destinationCache: IDestinationCache =  {};
+
 const config = {
+    timeout: Number(process.env.TIMEOUT_DESTINATION) || 3600, // 3600 - 60 Minutes
     proxyport: process.env.PORT || 5050,
     defaultDestination: process.env.DEFAULT_DESTINATION || "SAP_ABAP_BACKEND",
     destinationPropertyName: (process.env.DESTINATION_PROPERTY_NAME || "X-SAP-BTP-destination").toLowerCase(),
@@ -67,13 +76,26 @@ const server = http.createServer(async (req, res) => {
     // read the destination name
     const destinationName = [req.headers[config.destinationPropertyName]].flat()[0] || config.defaultDestination;
     logger.info(`Request entered the building: proxy to ${destinationName}`);
-
+    let sdkDestination;
     // read the destination on cloud foundry
     try {
-        const sdkDestination = await getDestination(destinationName);
-        if(sdkDestination === null) {
-            throw Error(`Connection ${destinationName} not found`);
+        if (
+            !destinationCache ||
+            !destinationCache[destinationName] ||
+            new Date().getTime() - config.timeout * 1000 > destinationCache[destinationName].timeout
+          ) {
+            sdkDestination = await getDestination(destinationName);
+            if(sdkDestination === null) {
+                throw Error(`Connection ${destinationName} not found`);
+            }
+            logger.info(`Cache destination ${destinationName}`);
+            destinationCache[destinationName] = {
+                destination: sdkDestination,
+                timeout: new Date().getTime()
+            };
         }
+        sdkDestination = destinationCache[destinationName].destination;
+
         logger.info(`Forwarding this request to ${sdkDestination.url}`);
         let target: any = new URL(sdkDestination.url);
         target.headers = {
