@@ -108,7 +108,6 @@ const server = http_1.default.createServer(async (req, res) => {
         if (sdkDestination.proxyType.toLowerCase() === "onpremise") {
             logger.info(`This is an on premise request. Let's send it over the SSH tunnel.`);
             target = {
-                path: `${sdkDestination.url}${req.url}`,
                 headers: {
                     ...target.headers
                 },
