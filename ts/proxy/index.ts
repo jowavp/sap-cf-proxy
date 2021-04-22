@@ -108,9 +108,10 @@ const server = http.createServer(async (req, res) => {
         }
 
         if (sdkDestination.authentication === "OAuth2ClientCredentials") {
-            const destination = await readDestination<IHTTPDestinationConfiguration>( destinationName, authorizationHeader )
-            const destinationConfiguration = destination.destinationConfiguration;
-            const clientCredentialsToken = await createTokenForDestination(destinationConfiguration);
+            if(!sdkDestination.authTokens) {
+                throw (new Error(`No token retrieved for destination ${destinationName}`));
+            }
+            const clientCredentialsToken = sdkDestination.authTokens[0].value;
             target.headers = {
                 ...target.headers,
                 Authorization: `Bearer ${clientCredentialsToken}`

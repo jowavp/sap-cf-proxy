@@ -8,7 +8,6 @@ const http_proxy_1 = __importDefault(require("http-proxy"));
 const pino_1 = __importDefault(require("pino"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const core_1 = require("@sap-cloud-sdk/core");
-const sap_cf_destconn_1 = require("sap-cf-destconn");
 const authentication_1 = require("./authentication");
 dotenv_1.default.config();
 const logger = pino_1.default({
@@ -85,9 +84,10 @@ const server = http_1.default.createServer(async (req, res) => {
             req.headers.authorization = "Basic " + Buffer.from(`${sdkDestination.username}:${sdkDestination.password}`, 'ascii').toString('base64');
         }
         if (sdkDestination.authentication === "OAuth2ClientCredentials") {
-            const destination = await sap_cf_destconn_1.readDestination(destinationName, authorizationHeader);
-            const destinationConfiguration = destination.destinationConfiguration;
-            const clientCredentialsToken = await authentication_1.createTokenForDestination(destinationConfiguration);
+            if (!sdkDestination.authTokens) {
+                throw (new Error(`No token retrieved for destination ${destinationName}`));
+            }
+            const clientCredentialsToken = sdkDestination.authTokens[0].value;
             target.headers = {
                 ...target.headers,
                 Authorization: `Bearer ${clientCredentialsToken}`
