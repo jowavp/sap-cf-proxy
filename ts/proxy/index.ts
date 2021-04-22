@@ -37,8 +37,8 @@ const config = {
         host: process.env.CFPROXY_HOST || '127.0.0.1',
         port: parseInt(process.env.CFPROXY_PORT || "20003")
     },
-    credentials: process.env.USER && process.env.PASSWORD ? {
-        username: process.env.USER,
+    credentials: process.env.USERNAME && process.env.PASSWORD ? {
+        username: process.env.USERNAME,
         password: process.env.PASSWORD
     } : undefined
 };
