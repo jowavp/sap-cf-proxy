@@ -22,7 +22,6 @@ Remark: The start ssh tunnel is currently forwarding the requests to 'connectivi
 Go to the SAP BTP Cockpit and open the details of the deployed app *sshenabler*. Navigate there to the Environment Variables. Copy the content of the textbox *System Provided* to a local file called *default-env.json*. Then run the following commands in another terminal window:
 
 ```
-export VCAP_SERVICES=`cat default-env.json | jq .VCAP_SERVICES`
 npm start
 ```
 
