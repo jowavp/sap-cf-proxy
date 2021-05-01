@@ -3,6 +3,7 @@ import httpProxy from 'http-proxy'
 import pino from 'pino'
 import dotenv from 'dotenv'
 import { getDestination, Destination } from '@sap-cloud-sdk/core'
+import * as xsenv from '@sap/xsenv';
 
 import { IHTTPDestinationConfiguration, readDestination } from 'sap-cf-destconn'
 import { basicToJWT, getAuthenticationType, createTokenForDestination } from './authentication'
@@ -14,7 +15,8 @@ type IDestinationCache = {
         destination: Destination
     } 
 };
-
+//Load default-env.json file automatically from the beginning
+xsenv.loadEnv();
 dotenv.config();
 
 const logger = pino({
