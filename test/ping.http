@@ -14,3 +14,9 @@ GET {{$dotenv sapcpproxy}}/sap/bc/ping
 X-SAP-BTP-destination: SAP_ABAP_BACKEND
 Accept-Language: en
 Authorization: Basic {{$dotenv sapid_username}}:{{$dotenv sapid_password}}
+
+
+### Test OAuth2ClientCredentials destination (Microsoft Graph)
+GET {{$dotenv sapcpproxy}}/v1.0/users
+X-SAP-BTP-destination: MicrosoftGraph
+Authorization: Basic {{$dotenv sapid_username}}:{{$dotenv sapid_password}}
