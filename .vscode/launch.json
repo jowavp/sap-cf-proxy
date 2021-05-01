@@ -18,7 +18,10 @@
       "name": "proxy",
       "program": "${workspaceFolder}/ts/proxy/index.ts",
       "preLaunchTask": "tsc: build - tsconfig.json",
-      "outFiles": ["${workspaceFolder}/dist/proxy/**/*.js"]
+      "outFiles": ["${workspaceFolder}/dist/proxy/**/*.js"],
+      "env": {
+        "PORT": "5050"
+      }
     }
   ]
 }
