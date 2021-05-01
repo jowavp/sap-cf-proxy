@@ -39,8 +39,8 @@ const config = {
         host: process.env.CFPROXY_HOST || '127.0.0.1',
         port: parseInt(process.env.CFPROXY_PORT || "20003")
     },
-    credentials: process.env.USER && process.env.PASSWORD ? {
-        username: process.env.USER,
+    credentials: process.env.USERNAME && process.env.PASSWORD ? {
+        username: process.env.USERNAME,
         password: process.env.PASSWORD
     } : undefined
 };
@@ -110,9 +110,10 @@ const server = http.createServer(async (req, res) => {
         }
 
         if (sdkDestination.authentication === "OAuth2ClientCredentials") {
-            const destination = await readDestination<IHTTPDestinationConfiguration>( destinationName, authorizationHeader )
-            const destinationConfiguration = destination.destinationConfiguration;
-            const clientCredentialsToken = await createTokenForDestination(destinationConfiguration);
+            if(!sdkDestination.authTokens) {
+                throw (new Error(`No token retrieved for destination ${destinationName}`));
+            }
+            const clientCredentialsToken = sdkDestination.authTokens[0].value;
             target.headers = {
                 ...target.headers,
                 Authorization: `Bearer ${clientCredentialsToken}`

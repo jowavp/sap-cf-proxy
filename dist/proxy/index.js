@@ -28,7 +28,6 @@ const pino_1 = __importDefault(require("pino"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const core_1 = require("@sap-cloud-sdk/core");
 const xsenv = __importStar(require("@sap/xsenv"));
-const sap_cf_destconn_1 = require("sap-cf-destconn");
 const authentication_1 = require("./authentication");
 //Load default-env.json file automatically from the beginning
 xsenv.loadEnv();
@@ -50,8 +49,8 @@ const config = {
         host: process.env.CFPROXY_HOST || '127.0.0.1',
         port: parseInt(process.env.CFPROXY_PORT || "20003")
     },
-    credentials: process.env.USER && process.env.PASSWORD ? {
-        username: process.env.USER,
+    credentials: process.env.USERNAME && process.env.PASSWORD ? {
+        username: process.env.USERNAME,
         password: process.env.PASSWORD
     } : undefined
 };
@@ -107,9 +106,10 @@ const server = http_1.default.createServer(async (req, res) => {
             req.headers.authorization = "Basic " + Buffer.from(`${sdkDestination.username}:${sdkDestination.password}`, 'ascii').toString('base64');
         }
         if (sdkDestination.authentication === "OAuth2ClientCredentials") {
-            const destination = await sap_cf_destconn_1.readDestination(destinationName, authorizationHeader);
-            const destinationConfiguration = destination.destinationConfiguration;
-            const clientCredentialsToken = await authentication_1.createTokenForDestination(destinationConfiguration);
+            if (!sdkDestination.authTokens) {
+                throw (new Error(`No token retrieved for destination ${destinationName}`));
+            }
+            const clientCredentialsToken = sdkDestination.authTokens[0].value;
             target.headers = {
                 ...target.headers,
                 Authorization: `Bearer ${clientCredentialsToken}`
