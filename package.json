@@ -11,7 +11,7 @@
     "build:mta": "mbt build",
     "deploy:cf": "cross-var cf deploy mta_archives/sshenabler_$npm_package_version.mtar",
     "enable-ssh": "cf enable-ssh sshenabler && cf restart sshenabler",
-    "start:sshtunnel": "cf ssh sshenabler -L 20003:connectivityproxy.internal.cf.eu10.hana.ondemand.com:20003"
+    "start:sshtunnel": "cf ssh sshenabler -L 20003:connectivityproxy.internal.cf.eu10.hana.ondemand.com:20003 -L 20004:connectivityproxy.internal.cf.eu10.hana.ondemand.com:20004"
   },
   "author": "Joachim Van Praet",
   "license": "Apache-2.0",
