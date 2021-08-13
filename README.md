@@ -26,7 +26,7 @@ npm start
 
 ## Proxy Configuration
 
-Following properties can be configured in a .env file in the rootfolder.
+Following properties can be configured in a .env file in the root folder of the project.
 
 | Property                  | Description                                                                                | Defaul value          |
 | ------------------------- | ------------------------------------------------------------------------------------------ | --------------------- |
@@ -36,7 +36,7 @@ Following properties can be configured in a .env file in the rootfolder.
 | CFPROXY_HOST              | Host where the port-forwarding is running to the CF proxy                                  | 127.0.0.1             |
 | CFPROXY_POST              | Port that is forwarded to the CF proxy                                                     | 20003                 |
 | USERNAME                  | Username in cloud foundry, if no user is set you have to send an authorization header.     |
-| PASWORD                   | Password in cloud foundry, if no password is set you have to send an authorization header. |
+| PASSWORD                  | Password in cloud foundry, if no password is set you have to send an authorization header. |
 
 ## Testing
 
