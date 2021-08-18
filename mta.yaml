@@ -20,8 +20,8 @@ modules:
       commands:
         - npm install
     parameters:
-      disk-quota: 128M
-      memory: 32M
+      disk-quota: 256M
+      memory: 128M
     requires:
       - name: destination_service
       - name: uaa_service
