@@ -2,7 +2,7 @@ import http from "http";
 import httpProxy from "http-proxy";
 import pino from "pino";
 import dotenv from "dotenv";
-import { getDestination, Destination } from "@sap-cloud-sdk/core";
+import { getDestination, retrieveJwt, Destination } from "@sap-cloud-sdk/core";
 import * as xsenv from "@sap/xsenv";
 
 import {
@@ -72,14 +72,22 @@ const server = http.createServer(async (req, res) => {
   const authenticationType = getAuthenticationType(authorization);
 
   let authorizationHeader;
+  let jwtToken = {
+    token_type: "",
+    access_token: "",
+  };
   if (authenticationType === "basic") {
-    authorizationHeader = await basicToJWT(authorization);
+    jwtToken = await basicToJWT(authorization);
+    authorizationHeader = `${jwtToken.token_type} ${jwtToken.access_token}`;
   }
   if (authenticationType === "bearer") {
+    jwtToken.token_type = "bearer";
+    jwtToken.access_token = authorization.split(" ")[1];
     authorizationHeader = authorization;
   }
   if (authenticationType === "none" && config.credentials) {
-    authorizationHeader = await basicToJWT(config.credentials);
+    jwtToken = await basicToJWT(config.credentials);
+    authorizationHeader = `${jwtToken.token_type} ${jwtToken.access_token}`;
   }
 
   // read the destination name
@@ -96,7 +104,10 @@ const server = http.createServer(async (req, res) => {
       new Date().getTime() - config.timeout * 1000 >
         destinationCache[destinationName].timeout
     ) {
-      sdkDestination = await getDestination(destinationName);
+      const options = {
+        userJwt: jwtToken.access_token,
+      };
+      sdkDestination = await getDestination(destinationName, options);
       if (sdkDestination === null) {
         throw Error(`Connection ${destinationName} not found`);
       }

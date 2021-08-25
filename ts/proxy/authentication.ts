@@ -1,6 +1,7 @@
 import * as xsenv from "@sap/xsenv";
 import axios from "axios";
 import { IHTTPDestinationConfiguration } from "sap-cf-destconn";
+import internal from "stream";
 
 type IXSUAA = {
   apiurl: string;
@@ -24,6 +25,16 @@ type ICredentials = {
   password: string;
 };
 
+type IToken = {
+  access_token: string;
+  token_type: string;
+  id_token: string;
+  refresh_token: string;
+  expires_in: number;
+  scope: string;
+  jti: string;
+};
+
 const config = {
   timeout: Number(process.env.TIMEOUT_JWT) || 3600, // 3600 - 60 Minutes
 };
@@ -37,7 +48,7 @@ type IjwtTokenCache = {
 
 var jwtTokenCache: IjwtTokenCache = {};
 
-export const basicToJWT = async (authorization: string | ICredentials) => {
+export const basicToJWT: any = async (authorization: string | ICredentials) => {
   xsenv.loadEnv();
   // check if a xsuaa is linked to this project.
   const { xsuaa } = xsenv.getServices({
@@ -52,7 +63,7 @@ export const basicToJWT = async (authorization: string | ICredentials) => {
   if ("string" === typeof authorization) {
     authorization = decodeBA(authorization);
   }
-  let jwtToken;
+  let jwtToken: IToken;
   if (
     !jwtTokenCache ||
     !jwtTokenCache[authorization.username] ||
@@ -66,7 +77,7 @@ export const basicToJWT = async (authorization: string | ICredentials) => {
     };
   }
   jwtToken = jwtTokenCache[authorization.username].jwtToken;
-  return `${jwtToken.token_type} ${jwtToken.access_token}`;
+  return jwtToken;
 };
 
 export async function createTokenForDestination(
@@ -136,7 +147,7 @@ export const getAuthenticationType = (authorization: string) => {
     : "none";
 };
 
-async function fetchToken(xsuaa: IXSUAA, credentials: ICredentials) {
+const fetchToken: any = async (xsuaa: IXSUAA, credentials: ICredentials) => {
   const tokenBaseUrl = `${xsuaa.url}`;
   const token = (
     await axios({
@@ -157,7 +168,7 @@ async function fetchToken(xsuaa: IXSUAA, credentials: ICredentials) {
   ).data;
 
   return token;
-}
+};
 
 function decodeBA(authorization: string) {
   const [type, userpwd] = authorization.split(" "); // Split on a space, the original auth looks like  "Basic Y2hhcmxlczoxMjM0NQ==" and we need the 2nd part

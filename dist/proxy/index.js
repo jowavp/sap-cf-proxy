@@ -46,13 +46,15 @@ const config = {
     defaultDestination: process.env.DEFAULT_DESTINATION || "SAP_ABAP_BACKEND",
     destinationPropertyName: (process.env.DESTINATION_PROPERTY_NAME || "X-SAP-BTP-destination").toLowerCase(),
     cfproxy: {
-        host: process.env.CFPROXY_HOST || '127.0.0.1',
-        port: parseInt(process.env.CFPROXY_PORT || "20003")
+        host: process.env.CFPROXY_HOST || "127.0.0.1",
+        port: parseInt(process.env.CFPROXY_PORT || "20003"),
     },
-    credentials: process.env.USERNAME && process.env.PASSWORD ? {
-        username: process.env.USERNAME,
-        password: process.env.PASSWORD
-    } : undefined
+    credentials: process.env.USERNAME && process.env.PASSWORD
+        ? {
+            username: process.env.USERNAME,
+            password: process.env.PASSWORD,
+        }
+        : undefined,
 };
 proxy.on("proxyReq", function (proxyReq, req, res, options) {
     var _a;
@@ -67,62 +69,79 @@ const server = http_1.default.createServer(async (req, res) => {
     const authorization = req.headers.authorization || "";
     const authenticationType = authentication_1.getAuthenticationType(authorization);
     let authorizationHeader;
+    let jwtToken = {
+        token_type: "",
+        access_token: "",
+    };
     if (authenticationType === "basic") {
-        authorizationHeader = await authentication_1.basicToJWT(authorization);
+        jwtToken = await authentication_1.basicToJWT(authorization);
+        authorizationHeader = `${jwtToken.token_type} ${jwtToken.access_token}`;
     }
     if (authenticationType === "bearer") {
+        jwtToken.token_type = "bearer";
+        jwtToken.access_token = authorization.split(" ")[1];
         authorizationHeader = authorization;
     }
     if (authenticationType === "none" && config.credentials) {
-        authorizationHeader = await authentication_1.basicToJWT(config.credentials);
+        jwtToken = await authentication_1.basicToJWT(config.credentials);
+        authorizationHeader = `${jwtToken.token_type} ${jwtToken.access_token}`;
     }
     // read the destination name
-    const destinationName = [req.headers[config.destinationPropertyName]].flat()[0] || config.defaultDestination;
+    const destinationName = [req.headers[config.destinationPropertyName]].flat()[0] ||
+        config.defaultDestination;
     logger.info(`Request entered the building: proxy to ${destinationName}`);
     let sdkDestination;
     // read the destination on cloud foundry
     try {
         if (!destinationCache ||
             !destinationCache[destinationName] ||
-            new Date().getTime() - config.timeout * 1000 > destinationCache[destinationName].timeout) {
-            sdkDestination = await core_1.getDestination(destinationName);
+            new Date().getTime() - config.timeout * 1000 >
+                destinationCache[destinationName].timeout) {
+            const options = {
+                userJwt: jwtToken.access_token,
+            };
+            sdkDestination = await core_1.getDestination(destinationName, options);
             if (sdkDestination === null) {
                 throw Error(`Connection ${destinationName} not found`);
             }
             logger.info(`Cache destination ${destinationName}`);
             destinationCache[destinationName] = {
                 destination: sdkDestination,
-                timeout: new Date().getTime()
+                timeout: new Date().getTime(),
             };
         }
         sdkDestination = destinationCache[destinationName].destination;
         logger.info(`Forwarding this request to ${sdkDestination.url}`);
         let target = new URL(sdkDestination.url);
         target.headers = {
-            'host': target.host
+            host: target.host,
         };
         //
         if (sdkDestination.authentication === "BasicAuthentication") {
-            req.headers.authorization = "Basic " + Buffer.from(`${sdkDestination.username}:${sdkDestination.password}`, 'ascii').toString('base64');
+            req.headers.authorization =
+                "Basic " +
+                    Buffer.from(`${sdkDestination.username}:${sdkDestination.password}`, "ascii").toString("base64");
         }
         if (sdkDestination.authentication === "OAuth2ClientCredentials") {
             if (!sdkDestination.authTokens) {
-                throw (new Error(`No token retrieved for destination ${destinationName}`));
+                throw new Error(`No token retrieved for destination ${destinationName}`);
             }
             const clientCredentialsToken = sdkDestination.authTokens[0].value;
             target.headers = {
                 ...target.headers,
-                Authorization: `Bearer ${clientCredentialsToken}`
+                Authorization: `Bearer ${clientCredentialsToken}`,
             };
             delete req.headers.authorization;
         }
-        if (sdkDestination.authTokens && sdkDestination.authTokens[0] && !sdkDestination.authTokens[0].error) {
+        if (sdkDestination.authTokens &&
+            sdkDestination.authTokens[0] &&
+            !sdkDestination.authTokens[0].error) {
             if (sdkDestination.authTokens[0].error) {
-                throw (new Error(sdkDestination.authTokens[0].error));
+                throw new Error(sdkDestination.authTokens[0].error);
             }
             target.headers = {
                 ...target.headers,
-                Authorization: `${sdkDestination.authTokens[0].type} ${sdkDestination.authTokens[0].value}`
+                Authorization: `${sdkDestination.authTokens[0].type} ${sdkDestination.authTokens[0].value}`,
             };
             delete req.headers.authorization;
         }
@@ -131,19 +150,20 @@ const server = http_1.default.createServer(async (req, res) => {
             logger.info(`This is an on premise request. Let's send it over the SSH tunnel.`);
             target = {
                 headers: {
-                    ...target.headers
+                    ...target.headers,
                 },
                 protocol: sdkDestination.proxyConfiguration.protocol,
                 host: config.cfproxy.host,
-                port: config.cfproxy.port
+                port: config.cfproxy.port,
             };
             if (sdkDestination.cloudConnectorLocationId) {
-                target.headers["SAP-Connectivity-SCC-Location_ID"] = sdkDestination.cloudConnectorLocationId;
+                target.headers["SAP-Connectivity-SCC-Location_ID"] =
+                    sdkDestination.cloudConnectorLocationId;
             }
             if (sdkDestination.proxyConfiguration) {
                 req.headers = {
                     ...req.headers,
-                    ...sdkDestination.proxyConfiguration.headers
+                    ...sdkDestination.proxyConfiguration.headers,
                 };
             }
             if (sdkDestination.authentication === "PrincipalPropagation") {
