@@ -34,8 +34,8 @@ const basicToJWT = async (authorization) => {
     // check if a xsuaa is linked to this project.
     const { xsuaa } = xsenv.getServices({
         xsuaa: {
-            tag: 'xsuaa'
-        }
+            tag: "xsuaa",
+        },
     });
     if (!xsuaa) {
         throw `No xsuaa service found`;
@@ -46,15 +46,16 @@ const basicToJWT = async (authorization) => {
     let jwtToken;
     if (!jwtTokenCache ||
         !jwtTokenCache[authorization.username] ||
-        new Date().getTime() - config.timeout * 1000 > jwtTokenCache[authorization.username].timeout) {
+        new Date().getTime() - config.timeout * 1000 >
+            jwtTokenCache[authorization.username].timeout) {
         jwtToken = await fetchToken(xsuaa, authorization);
         jwtTokenCache[authorization.username] = {
             jwtToken: jwtToken,
-            timeout: new Date().getTime()
+            timeout: new Date().getTime(),
         };
     }
     jwtToken = jwtTokenCache[authorization.username].jwtToken;
-    return `${jwtToken.token_type} ${jwtToken.access_token}`;
+    return jwtToken;
 };
 exports.basicToJWT = basicToJWT;
 async function createTokenForDestination(dc) {
@@ -64,71 +65,77 @@ async function createTokenForDestination(dc) {
     if (scope || audience) {
         token = (await axios_1.default({
             url: `${dc.tokenServiceURL}`,
-            method: 'POST',
-            responseType: 'json',
+            method: "POST",
+            responseType: "json",
             data: {
-                "grant_type": "client_credentials",
+                grant_type: "client_credentials",
                 scope,
-                audience
+                audience,
             },
-            headers: { 'Content-Type': 'application/json' },
+            headers: { "Content-Type": "application/json" },
             auth: {
                 username: dc.clientId,
-                password: dc.clientSecret
-            }
+                password: dc.clientSecret,
+            },
         })).data;
     }
     else {
         token = (await axios_1.default({
             url: `${dc.tokenServiceURL}`,
-            method: 'POST',
-            responseType: 'json',
+            method: "POST",
+            responseType: "json",
             data: `client_id=${encodeURIComponent(dc.clientId)}&client_secret=${encodeURIComponent(dc.clientSecret)}&grant_type=client_credentials`,
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
             auth: {
                 username: dc.clientId,
-                password: dc.clientSecret
-            }
+                password: dc.clientSecret,
+            },
         })).data;
     }
     return token.access_token;
 }
 exports.createTokenForDestination = createTokenForDestination;
-;
 function convertScope(scope) {
     if (!scope)
         return null;
-    return scope.split(" ").map((sc) => sc.split(':')).reduce((acc, [key, value]) => {
+    return scope
+        .split(" ")
+        .map((sc) => sc.split(":"))
+        .reduce((acc, [key, value]) => {
         acc[key] = value;
         return acc;
     }, {});
 }
 const getAuthenticationType = (authorization) => {
-    return /bearer/igm.test(authorization) ? "bearer" : /basic/igm.test(authorization) ? "basic" : "none";
+    return /bearer/gim.test(authorization)
+        ? "bearer"
+        : /basic/gim.test(authorization)
+            ? "basic"
+            : "none";
 };
 exports.getAuthenticationType = getAuthenticationType;
-async function fetchToken(xsuaa, credentials) {
+const fetchToken = async (xsuaa, credentials) => {
     const tokenBaseUrl = `${xsuaa.url}`;
     const token = (await axios_1.default({
         url: `${tokenBaseUrl}/oauth/token`,
-        method: 'POST',
-        responseType: 'json',
+        method: "POST",
+        responseType: "json",
         data: `client_id=${encodeURIComponent(xsuaa.clientid)}&grant_type=password&response_type=token&username=${encodeURIComponent(credentials.username)}&password=${encodeURIComponent(credentials.password)}`,
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
         auth: {
             username: xsuaa.clientid,
-            password: xsuaa.clientsecret
-        }
+            password: xsuaa.clientsecret,
+        },
     })).data;
     return token;
-}
+};
 function decodeBA(authorization) {
     const [type, userpwd] = authorization.split(" "); // Split on a space, the original auth looks like  "Basic Y2hhcmxlczoxMjM0NQ==" and we need the 2nd part
     const buf = Buffer.from(userpwd, "base64"); // create a buffer and tell it the data coming in is base64
     const [username, password] = buf.toString().split(":");
     return {
         username,
-        password
+        password,
     };
 }
 //# sourceMappingURL=authentication.js.map

@@ -8,7 +8,7 @@ const http_1 = __importDefault(require("http"));
 const port = process.env.PORT || 3000;
 const server = http_1.default.createServer((req, res) => {
     res.statusCode = 200;
-    res.setHeader('Content-Type', 'text/plain');
+    res.setHeader("Content-Type", "text/plain");
     res.end(`Hi, I'm just a lazy service to enable local SSH tunnels.`);
 });
 server.listen(port, () => {
