@@ -22,7 +22,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAuthenticationType = exports.createTokenForDestination = exports.basicToJWT = void 0;
+exports.getAuthenticationType = exports.basicToJWT = void 0;
 const xsenv = __importStar(require("@sap/xsenv"));
 const axios_1 = __importDefault(require("axios"));
 const config = {
@@ -58,43 +58,6 @@ const basicToJWT = async (authorization) => {
     return jwtToken;
 };
 exports.basicToJWT = basicToJWT;
-async function createTokenForDestination(dc) {
-    const scope = convertScope(dc.Scope || dc.scope);
-    const audience = dc.oauth_audience;
-    let token;
-    if (scope || audience) {
-        token = (await axios_1.default({
-            url: `${dc.tokenServiceURL}`,
-            method: "POST",
-            responseType: "json",
-            data: {
-                grant_type: "client_credentials",
-                scope,
-                audience,
-            },
-            headers: { "Content-Type": "application/json" },
-            auth: {
-                username: dc.clientId,
-                password: dc.clientSecret,
-            },
-        })).data;
-    }
-    else {
-        token = (await axios_1.default({
-            url: `${dc.tokenServiceURL}`,
-            method: "POST",
-            responseType: "json",
-            data: `client_id=${encodeURIComponent(dc.clientId)}&client_secret=${encodeURIComponent(dc.clientSecret)}&grant_type=client_credentials`,
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            auth: {
-                username: dc.clientId,
-                password: dc.clientSecret,
-            },
-        })).data;
-    }
-    return token.access_token;
-}
-exports.createTokenForDestination = createTokenForDestination;
 function convertScope(scope) {
     if (!scope)
         return null;
@@ -116,7 +79,7 @@ const getAuthenticationType = (authorization) => {
 exports.getAuthenticationType = getAuthenticationType;
 const fetchToken = async (xsuaa, credentials) => {
     const tokenBaseUrl = `${xsuaa.url}`;
-    const token = (await axios_1.default({
+    const token = (await (0, axios_1.default)({
         url: `${tokenBaseUrl}/oauth/token`,
         method: "POST",
         responseType: "json",

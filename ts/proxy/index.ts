@@ -11,8 +11,7 @@ import {
 } from "sap-cf-destconn";
 import {
   basicToJWT,
-  getAuthenticationType,
-  createTokenForDestination,
+  getAuthenticationType
 } from "./authentication";
 
 type IAuthenticationType = "bearer" | "basic" | "none";
@@ -198,7 +197,7 @@ const server = http.createServer(async (req, res) => {
 
     proxy.web(req, res, { target });
   } catch (error) {
-    logger.error(error);
+    logger.error(JSON.stringify(error));
   }
 });
 

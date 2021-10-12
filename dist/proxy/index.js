@@ -32,7 +32,7 @@ const authentication_1 = require("./authentication");
 //Load default-env.json file automatically from the beginning
 xsenv.loadEnv();
 dotenv_1.default.config();
-const logger = pino_1.default({
+const logger = (0, pino_1.default)({
     level: process.env.LOG_LEVEL || "info",
     prettyPrint: process.env.LOG_AS_TEXT !== "false",
 });
@@ -67,14 +67,14 @@ proxy.on("proxyReq", function (proxyReq, req, res, options) {
 });
 const server = http_1.default.createServer(async (req, res) => {
     const authorization = req.headers.authorization || "";
-    const authenticationType = authentication_1.getAuthenticationType(authorization);
+    const authenticationType = (0, authentication_1.getAuthenticationType)(authorization);
     let authorizationHeader;
     let jwtToken = {
         token_type: "",
         access_token: "",
     };
     if (authenticationType === "basic") {
-        jwtToken = await authentication_1.basicToJWT(authorization);
+        jwtToken = await (0, authentication_1.basicToJWT)(authorization);
         authorizationHeader = `${jwtToken.token_type} ${jwtToken.access_token}`;
     }
     if (authenticationType === "bearer") {
@@ -83,7 +83,7 @@ const server = http_1.default.createServer(async (req, res) => {
         authorizationHeader = authorization;
     }
     if (authenticationType === "none" && config.credentials) {
-        jwtToken = await authentication_1.basicToJWT(config.credentials);
+        jwtToken = await (0, authentication_1.basicToJWT)(config.credentials);
         authorizationHeader = `${jwtToken.token_type} ${jwtToken.access_token}`;
     }
     // read the destination name
@@ -100,7 +100,7 @@ const server = http_1.default.createServer(async (req, res) => {
             const options = {
                 userJwt: jwtToken.access_token,
             };
-            sdkDestination = await core_1.getDestination(destinationName, options);
+            sdkDestination = await (0, core_1.getDestination)(destinationName, options);
             if (sdkDestination === null) {
                 throw Error(`Connection ${destinationName} not found`);
             }
@@ -174,7 +174,7 @@ const server = http_1.default.createServer(async (req, res) => {
         proxy.web(req, res, { target });
     }
     catch (error) {
-        logger.error(error);
+        logger.error(JSON.stringify(error));
     }
 });
 logger.info(`proxy listening on port     : ${config.proxyport}`);
