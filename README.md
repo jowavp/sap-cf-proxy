@@ -1,5 +1,24 @@
 # sap-cf-proxy - proxy to all destinations in SAP BTP Cloud Foundry subaccount
 
+## Why?
+
+You might ask why do I need this project? The answer is whenever you want to work with On Premise Destinations and you don't have a VPN connection which would allow you to connect directly.
+
+## Limitations
+
+The authenticaiton of the SAP BTP Cloud Foundry subaccount must be configured to use SAP ID or SAP Identity Authentication. For SAP Identity Authenticaiton you must have the credentials of a local user.
+
+## How does it work
+
+![sap-cf-proxy Architecture](documentation/sap-cf-proxy.png)
+
+This proxy makes use of the possibility to connect via ssh into an app (sshenabler) that is running inside the SAP BTP Cloud Foundry environment. From there the so called connectivity proxy is reachable. This proxy is provided by an instance of the Connectivity Service. On your development computer you have to start two programs:
+
+- the script that establishes the ssh tunnel and forwards requests from the local port 20003 and 20004 to connectivityproxy.internal.cf.eu10.hana.ondemand.com:20003 / 20004
+- the reverse proxy that by default listens on port 5050 and acts as your local endpoint for calls that should be forwarded to the on premise system
+
+When your local app that you develop e.g. a CAP Application using an external service, a SAPUI5 App or a REST Client Script sends a request to the proxy, it will either use the username / password provided as an basic authentication header or via the environment variables USERNAME / PASSWORD and use that to authenticate on the XSUAA service using the password grant type. In return a JWT is retrieved. This token is sent in the backend request and is translated to the X.509 certificate used for principal propagation in the Cloud Connector. The local reverse proxy sends request for an on premise destination to local port that are forwarded via the ssh tunnel to the proxy in the BTP.
+
 ## Prerequisites
 
 You are logged into your SAP BTP Cloud Foundry subaccount via the cf CLI and you have the Multitarget Build Tool installed (mbt). Until [sap-cf-localenv](https://github.com/jowavp/sap-cf-localenv) is setup for the project also jq needs to be installed.
