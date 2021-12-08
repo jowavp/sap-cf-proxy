@@ -97,9 +97,10 @@ const server = http_1.default.createServer(async (req, res) => {
             !destinationCache[destinationName] ||
             new Date().getTime() - config.timeout * 1000 >
                 destinationCache[destinationName].timeout) {
-            const options = {
-                userJwt: jwtToken.access_token,
-            };
+            let options = {};
+            if (jwtToken.access_token !== "") {
+                options.userJwt = jwtToken.access_token;
+            }
             sdkDestination = await (0, core_1.getDestination)(destinationName, options);
             if (sdkDestination === null) {
                 throw Error(`Connection ${destinationName} not found`);

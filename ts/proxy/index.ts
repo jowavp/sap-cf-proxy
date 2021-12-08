@@ -2,17 +2,14 @@ import http from "http";
 import httpProxy from "http-proxy";
 import pino from "pino";
 import dotenv from "dotenv";
-import { getDestination, retrieveJwt, Destination } from "@sap-cloud-sdk/core";
+import {
+  getDestination,
+  Destination,
+  DestinationOptions,
+} from "@sap-cloud-sdk/core";
 import * as xsenv from "@sap/xsenv";
 
-import {
-  IHTTPDestinationConfiguration,
-  readDestination,
-} from "sap-cf-destconn";
-import {
-  basicToJWT,
-  getAuthenticationType
-} from "./authentication";
+import { basicToJWT, getAuthenticationType } from "./authentication";
 
 type IAuthenticationType = "bearer" | "basic" | "none";
 type IDestinationCache = {
@@ -103,9 +100,10 @@ const server = http.createServer(async (req, res) => {
       new Date().getTime() - config.timeout * 1000 >
         destinationCache[destinationName].timeout
     ) {
-      const options = {
-        userJwt: jwtToken.access_token,
-      };
+      let options: DestinationOptions = {};
+      if (jwtToken.access_token !== "") {
+        options.userJwt = jwtToken.access_token;
+      }
       sdkDestination = await getDestination(destinationName, options);
       if (sdkDestination === null) {
         throw Error(`Connection ${destinationName} not found`);
