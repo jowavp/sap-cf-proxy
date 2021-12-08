@@ -24,7 +24,12 @@ dotenv.config();
 
 const logger = pino({
   level: process.env.LOG_LEVEL || "info",
-  prettyPrint: process.env.LOG_AS_TEXT !== "false",
+  transport: {
+    target: "pino-pretty",
+    options: {
+      colorize: true,
+    },
+  },
 });
 
 const proxy = httpProxy.createProxyServer({

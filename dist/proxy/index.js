@@ -34,7 +34,12 @@ xsenv.loadEnv();
 dotenv_1.default.config();
 const logger = (0, pino_1.default)({
     level: process.env.LOG_LEVEL || "info",
-    prettyPrint: process.env.LOG_AS_TEXT !== "false",
+    transport: {
+        target: "pino-pretty",
+        options: {
+            colorize: true,
+        },
+    },
 });
 const proxy = http_proxy_1.default.createProxyServer({
     secure: false,
