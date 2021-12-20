@@ -2,18 +2,14 @@ import http from "http";
 import httpProxy from "http-proxy";
 import pino from "pino";
 import dotenv from "dotenv";
-import { getDestination, retrieveJwt, Destination } from "@sap-cloud-sdk/core";
+import {
+  getDestination,
+  Destination,
+  DestinationOptions,
+} from "@sap-cloud-sdk/core";
 import * as xsenv from "@sap/xsenv";
 
-import {
-  IHTTPDestinationConfiguration,
-  readDestination,
-} from "sap-cf-destconn";
-import {
-  basicToJWT,
-  getAuthenticationType,
-  createTokenForDestination,
-} from "./authentication";
+import { basicToJWT, getAuthenticationType } from "./authentication";
 
 type IAuthenticationType = "bearer" | "basic" | "none";
 type IDestinationCache = {
@@ -28,7 +24,12 @@ dotenv.config();
 
 const logger = pino({
   level: process.env.LOG_LEVEL || "info",
-  prettyPrint: process.env.LOG_AS_TEXT !== "false",
+  transport: {
+    target: "pino-pretty",
+    options: {
+      colorize: true,
+    },
+  },
 });
 
 const proxy = httpProxy.createProxyServer({
@@ -104,9 +105,10 @@ const server = http.createServer(async (req, res) => {
       new Date().getTime() - config.timeout * 1000 >
         destinationCache[destinationName].timeout
     ) {
-      const options = {
-        userJwt: jwtToken.access_token,
-      };
+      let options: DestinationOptions = {};
+      if (jwtToken.access_token !== "") {
+        options.userJwt = jwtToken.access_token;
+      }
       sdkDestination = await getDestination(destinationName, options);
       if (sdkDestination === null) {
         throw Error(`Connection ${destinationName} not found`);
@@ -198,7 +200,7 @@ const server = http.createServer(async (req, res) => {
 
     proxy.web(req, res, { target });
   } catch (error) {
-    logger.error(error);
+    logger.error(JSON.stringify(error));
   }
 });
 

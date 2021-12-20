@@ -80,54 +80,6 @@ export const basicToJWT: any = async (authorization: string | ICredentials) => {
   return jwtToken;
 };
 
-export async function createTokenForDestination(
-  dc: IHTTPDestinationConfiguration
-): Promise<string> {
-  const scope = convertScope(dc.Scope || dc.scope);
-  const audience = dc.oauth_audience;
-  let token;
-
-  if (scope || audience) {
-    token = (
-      await axios({
-        url: `${dc.tokenServiceURL}`,
-        method: "POST",
-        responseType: "json",
-        data: {
-          grant_type: "client_credentials",
-          scope,
-          audience,
-        },
-        headers: { "Content-Type": "application/json" },
-        auth: {
-          username: dc.clientId,
-          password: dc.clientSecret,
-        },
-      })
-    ).data;
-  } else {
-    token = (
-      await axios({
-        url: `${dc.tokenServiceURL}`,
-        method: "POST",
-        responseType: "json",
-        data: `client_id=${encodeURIComponent(
-          dc.clientId
-        )}&client_secret=${encodeURIComponent(
-          dc.clientSecret
-        )}&grant_type=client_credentials`,
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        auth: {
-          username: dc.clientId,
-          password: dc.clientSecret,
-        },
-      })
-    ).data;
-  }
-
-  return token.access_token;
-}
-
 function convertScope(scope?: String) {
   if (!scope) return null;
   return scope
