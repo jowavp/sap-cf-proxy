@@ -23,7 +23,7 @@ When you want to directly connect to e.g. a database running on-premise (Sybase 
 
 ## Prerequisites
 
-You are logged into your SAP BTP Cloud Foundry subaccount via the cf CLI and you have the Multitarget Build Tool installed (mbt). Until [sap-cf-localenv](https://github.com/jowavp/sap-cf-localenv) is setup for the project also jq needs to be installed.
+You are logged into your SAP BTP Cloud Foundry subaccount [via the cf CLI](https://blogs.sap.com/2021/04/21/connecting-from-sap-business-application-studio-to-sap-btp-cloud-foundry-environment/) and you have the [Multitarget Build Tool](https://sap.github.io/cloud-mta-build-tool/download/) installed (mbt). Until [sap-cf-localenv](https://github.com/jowavp/sap-cf-localenv) is setup for the project also jq needs to be installed.
 
 ## Setup
 
