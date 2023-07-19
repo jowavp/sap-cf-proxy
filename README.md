@@ -2,7 +2,7 @@
 
 ## Why?
 
-You might ask why do I need this project? The answer is whenever you want to work with on-premise destinations or a system connected through a Cloud Connector and you don't have a VPN connection which would allow you to connect directly.
+You might ask why do I need this project? The answer is whenever you want to work with on-premise destinations or a system connected through a Cloud Connector and you don't have a VPN connection which would allow you to connect directly. But please note that you don't need this project when you're working with SAP Business Application Studio and you have a Cloud Connector connected to the subaccount BAS is running in.
 
 ## Limitations
 
@@ -23,7 +23,7 @@ When you want to directly connect to e.g. a database running on-premise (Sybase 
 
 ## Prerequisites
 
-You are logged into your SAP BTP Cloud Foundry subaccount [via the cf CLI](https://blogs.sap.com/2021/04/21/connecting-from-sap-business-application-studio-to-sap-btp-cloud-foundry-environment/) and you have the [Multitarget Build Tool](https://sap.github.io/cloud-mta-build-tool/download/) installed (mbt). Until [sap-cf-localenv](https://github.com/jowavp/sap-cf-localenv) is setup for the project also jq needs to be installed.
+You are logged into your SAP BTP Cloud Foundry subaccount [via the cf CLI](https://blogs.sap.com/2021/04/21/connecting-from-sap-business-application-studio-to-sap-btp-cloud-foundry-environment/) and you have the [Multitarget Build Tool](https://sap.github.io/cloud-mta-build-tool/download/) installed (mbt).
 
 ## Setup
 
@@ -49,7 +49,7 @@ npm start
 
 ### Forward TCP data (Database connection)
 
-Go to the SAP BTP Cockpit and open the details of the deployed app _sshenabler_. Navigate there to the Environment Variables. Copy the content of the textbox _System Provided_ to a local file called _default-env.json_ in the directory *socks-proxy*.
+Go to the SAP BTP Cockpit and open the details of the deployed app _sshenabler_. Navigate there to the Environment Variables. Copy the content of the textbox _System Provided_ to a local file called _default-env.json_ in the directory _socks-proxy_.
 
 Then run the following commands in another terminal window. Make sure to change ON_PREMISE_HOST and ON_PREMISE_PORT to values that you see in the Cloud Connector configuration.
 
@@ -59,7 +59,7 @@ mvn compile
 ON_PREMISE_HOST=hostnameOfOnPremiseSystem ON_PREMISE_PORT=portOfOnPremiseSystem VCAP_SERVICES=$(jq '.VCAP_SERVICES' default-env.json|jq -c .) mvn compile exec:java -Dexec.mainClass="StartSocksProxy"
 ```
 
-Now you can open your preferred database tool or also your application that uses JDBC to connect and just point it to *localhost:5050*.
+Now you can open your preferred database tool or also your application that uses JDBC to connect and just point it to _localhost:5050_.
 
 ## Proxy Configuration (valid for HTTP request forwarding)
 
