@@ -95,3 +95,22 @@ Then run the test. The result should be:
 `<html><body>Server reached.</body></html>`
 
 in both cases.
+
+
+## update modules
+
+Currently the following warning are emmited on `npm i` 
+
+The deprecated libraries need to be updated. 
+
+```
+npm WARN deprecated @types/pino@7.0.5: This is a stub types definition. pino provides its own type definitions, so you do not need this installed.
+npm WARN deprecated babel-preset-es2015@6.24.1: 🙌  Thanks for using Babel: we recommend using babel-preset-env now: please read https://babeljs.io/env to update!
+npm WARN deprecated @sap-cloud-sdk/analytics@1.54.2: 1.x is no longer maintained.
+npm WARN deprecated @sap-cloud-sdk/util@1.54.2: 1.x is no longer maintained.
+npm WARN deprecated @sap-cloud-sdk/core@1.54.2: Version 1 of SAP Cloud SDK is no longer maintained. Check the upgrade guide for switching to version 2: https://sap.github.io/cloud-sdk/docs/js/guides/upgrade-to-version-2.
+npm WARN deprecated core-js@2.6.12: core-js@<3.23.3 is no longer maintained and not recommended for usage due to the number of issues. Because of the V8 engine whims, feature detection in old core-js versions could cause a slowdown up to 100x even if nothing is polyfilled. Some versions have web compatibility issues. Please, upgrade your dependencies to the actual version of core-js.
+
+
+
+```
