@@ -108,7 +108,23 @@ Then run the test. The result should be:
 
 in both cases.
 
-## update modules
+## Troubleshooting
+
+If you start the sshtunnel with `npm run start:sshtunnel` and get the following error:
+
+```bash
+Error opening SSH connection: You are not authorized to perform the requested action.
+```
+
+then you need to: 
+```bash
+cf enable-ssh sshenabler;
+cf restart sshenabler;
+```
+
+Other troubleshooting is [available](https://blogs.sap.com/2018/09/12/ssh-into-cloudfoundry-trouble/)
+
+## update modules @todo
 
 Currently the following warning are emmited on `npm i`
 
