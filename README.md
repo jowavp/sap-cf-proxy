@@ -39,9 +39,21 @@ npm run start:sshtunnel
 
 Remark: The start ssh tunnel is currently forwarding the requests to 'connectivityproxy.internal.cf.eu10.hana.ondemand.com:20003' if you are not in the cf-eu10 region, you have to change this configuration in the package.json file.
 
+This is set as configuration in `package.json` so update this config section to the correct url for your hosted environment
+
+```json
+  "config":{
+    "proxy": "connectivityproxy.internal.cf.eu10.hana.ondemand.com"
+  },
+```
+
+The host you are looking for is in the `credentials.onpremise_proxy_port` of the  _sshenabler_ Environment Variables (see next section). 
+ 
 ### Forward HTTP requests (CAP, UI5)
 
-Go to the SAP BTP Cockpit and open the details of the deployed app _sshenabler_. Navigate there to the Environment Variables. Copy the content of the textbox _System Provided_ to a local file called _default-env.json_. Then run the following commands in another terminal window:
+Go to the SAP BTP Cockpit and open the details of the deployed app _sshenabler_. Navigate there to the Environment Variables. Copy the content of the textbox _System Provided_ to a local file. 
+Only the `"VCAP_SERVICES"` section is required. **Do not add** the `"VCAP_APPLICATION"` section.
+Copy this to a local file called _default-env.json_. Then run the following commands in another terminal window:
 
 ```bash
 npm start
