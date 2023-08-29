@@ -29,7 +29,7 @@ You are logged into your SAP BTP Cloud Foundry subaccount [via the cf CLI](https
 
 Run the following commands in a terminal window:
 
-```
+```bash
 npm i
 npm run build:mta
 npm run deploy:cf
@@ -43,7 +43,7 @@ Remark: The start ssh tunnel is currently forwarding the requests to 'connectivi
 
 Go to the SAP BTP Cockpit and open the details of the deployed app _sshenabler_. Navigate there to the Environment Variables. Copy the content of the textbox _System Provided_ to a local file called _default-env.json_. Then run the following commands in another terminal window:
 
-```
+```bash
 npm start
 ```
 
@@ -53,7 +53,7 @@ Go to the SAP BTP Cockpit and open the details of the deployed app _sshenabler_.
 
 Then run the following commands in another terminal window. Make sure to change ON_PREMISE_HOST and ON_PREMISE_PORT to values that you see in the Cloud Connector configuration.
 
-```
+```bash
 cd socks-proxy
 mvn compile
 ON_PREMISE_HOST=hostnameOfOnPremiseSystem ON_PREMISE_PORT=portOfOnPremiseSystem VCAP_SERVICES=$(jq '.VCAP_SERVICES' default-env.json|jq -c .) mvn compile exec:java -Dexec.mainClass="StartSocksProxy"
@@ -79,7 +79,7 @@ Following properties can be configured in a .env file in the root folder of the 
 
 Using the VS Code Extension [REST Client](https://marketplace.visualstudio.com/items?itemName=humao.rest-client) you can execute the test in test/ping.http. Before you can run the test you have to create a .env file in the test folder with the following (of course adjusted) content:
 
-```
+```env
 sapcpproxy=http://localhost:5050
 sapid_username="<user-email>"
 sapid_password="<password>"
@@ -96,14 +96,13 @@ Then run the test. The result should be:
 
 in both cases.
 
-
 ## update modules
 
-Currently the following warning are emmited on `npm i` 
+Currently the following warning are emmited on `npm i`
 
-The deprecated libraries need to be updated. 
+The deprecated libraries need to be updated.
 
-```
+```txt
 npm WARN deprecated @types/pino@7.0.5: This is a stub types definition. pino provides its own type definitions, so you do not need this installed.
 npm WARN deprecated babel-preset-es2015@6.24.1: 🙌  Thanks for using Babel: we recommend using babel-preset-env now: please read https://babeljs.io/env to update!
 npm WARN deprecated @sap-cloud-sdk/analytics@1.54.2: 1.x is no longer maintained.
