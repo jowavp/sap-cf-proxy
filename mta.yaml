@@ -1,7 +1,7 @@
 ID: sshenabler
 _schema-version: 3.2.0
 description: Dummy application to create an SSH tunnel to serve destinations
-version: 0.0.1
+version: 0.0.2
 parameters:
   enable-parallel-deployments: true
 build-parameters:
