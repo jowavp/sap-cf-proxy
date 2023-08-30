@@ -25,21 +25,47 @@ When you want to directly connect to e.g. a database running on-premise (Sybase 
 
 You are logged into your SAP BTP Cloud Foundry subaccount [via the cf CLI](https://blogs.sap.com/2021/04/21/connecting-from-sap-business-application-studio-to-sap-btp-cloud-foundry-environment/) and you have the [Multitarget Build Tool](https://sap.github.io/cloud-mta-build-tool/download/) installed (mbt).
 
-## Setup
+## Installation 
 
-Run the following commands in a terminal window:
+Clone the repository to a directory of your choice:
 
 ```bash
-npm i
+git clone git@github.com:jowavp/sap-cf-proxy.git
+```
+
+
+## Setup
+
+Run the following commands in a terminal window in the `sap-cf-proxy` directory :
+
+```bash
+npm install
 npm run build:mta
 npm run deploy:cf
 npm run enable-ssh
-npm run start:sshtunnel
 ```
 
-Remark: The start ssh tunnel is currently forwarding the requests to 'connectivityproxy.internal.cf.eu10.hana.ondemand.com:20003' if you are not in the cf-eu10 region, you have to change this configuration in the package.json file.
+Now check the SAP BAP Cockpit for the correct setting for the connectivity proxy.
 
-This is set as configuration in `package.json` so update this config section to the correct url for your hosted environment
+>The `start-sshtunnel` command is currently forwarding the requests to:
+ `'connectivityproxy.internal.cf.eu10.hana.ondemand.com:20003'` . 
+
+### Connectivity Proxy
+
+Go to the SAP BTP Cockpit and open the details of the deployed app _sshenabler_. Navigate there to the Environment Variables. 
+
+This is found by opening the cloud foundry space in the correct sub-account.
+Click on the deployed application `sshenabler` and click on the `Environment Variables` in the left-hand menu.
+
+![Application menu](./documentation/application-menu.png)
+
+Copy the content of the textbox _System Provided_ to a local file. 
+Only the `"VCAP_SERVICES"` section is required. **Do not add** the `"VCAP_APPLICATION"` section.
+
+
+The host you are looking for is in the `credentials.onpremise_proxy_port` of the  _sshenabler_ Environment Variables. 
+ 
+This is set in configuration in `package.json` so update this config section to the setting in the Environment Variables
 
 ```json
   "config":{
@@ -47,13 +73,28 @@ This is set as configuration in `package.json` so update this config section to 
   },
 ```
 
-The host you are looking for is in the `credentials.onpremise_proxy_port` of the  _sshenabler_ Environment Variables (see next section). 
- 
+Once this configuration is complete you can now run:
+
+```bash
+npm run start:sshtunnel
+```
+
+The result should be something like:
+
+```bash
+
+> sap-cf-proxy@0.0.2 start:sshtunnel
+> cf ssh sshenabler -L 20003:$npm_package_config_proxy:20003 -L 20004:$npm_package_config_proxy:20004
+
+vcap@<guid>:~$ 
+```
+
+and you will be able to enter commands on the server if you wish.
+
 ### Forward HTTP requests (CAP, UI5)
 
-Go to the SAP BTP Cockpit and open the details of the deployed app _sshenabler_. Navigate there to the Environment Variables. Copy the content of the textbox _System Provided_ to a local file. 
-Only the `"VCAP_SERVICES"` section is required. **Do not add** the `"VCAP_APPLICATION"` section.
-Copy this to a local file called _default-env.json_. Then run the following commands in another terminal window:
+Once you have created the local _default-env.json_ as described above, in another terminal window of the sap-cf-proxy app run:
+
 
 ```bash
 npm start
