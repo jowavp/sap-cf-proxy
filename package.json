@@ -4,7 +4,7 @@
   "description": "Proxy all destinations in SAP BTP Cloud foundry account",
   "main": "index.js",
   "config":{
-    "proxy": "connectivityproxy.internal.cf.eu10-004.hana.ondemand.com"
+    "proxy": "connectivityproxy.internal.cf.eu10.hana.ondemand.com"
   },
   "scripts": {
     "start": "node dist/proxy/index.js",
