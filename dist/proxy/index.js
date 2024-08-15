@@ -50,7 +50,7 @@ const proxy = http_proxy_1.default.createProxyServer({
 });
 var destinationCache = {};
 const config = {
-    timeout: Number(process.env.TIMEOUT_DESTINATION) || 3600,
+    timeout: Number(process.env.TIMEOUT_DESTINATION) || 3600, // 3600 - 60 Minutes
     proxyport: process.env.PORT || 5050,
     defaultDestination: process.env.DEFAULT_DESTINATION || "SAP_ABAP_BACKEND",
     destinationPropertyName: (process.env.DESTINATION_PROPERTY_NAME || "X-SAP-BTP-destination").toLowerCase(),
