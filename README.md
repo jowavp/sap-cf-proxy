@@ -58,12 +58,12 @@ Click on the deployed application `sshenabler` and click on the `Environment Var
 
 ![Application menu](./documentation/application-menu.png)
 
-Copy the content of the textbox _System Provided_ to a local file.
+Copy the content of the textbox _System Provided_ to a file named _default-env.json_ in the root folder of this project.
 Only the `"VCAP_SERVICES"` section is required. **Do not add** the `"VCAP_APPLICATION"` section.
 
-The host you are looking for is in the `credentials.onpremise_proxy_port` of the _sshenabler_ Environment Variables.
+The hostname or IP address you are looking for is named `onpremise_proxy_host` in the `VCAP_SERVICES` Environment Variable of the `sshenabler` application.
 
-This is set in configuration in `package.json` so update this config section to the setting in the Environment Variables
+Update the following section in `package.json` with the hostname or IP address:
 
 ```json
   "config":{
@@ -133,6 +133,7 @@ Using the VS Code Extension [REST Client](https://marketplace.visualstudio.com/i
 sapcpproxy=http://localhost:5050
 sapid_username="<user-email>"
 sapid_password="<password>"
+sapclient=<SAP Client>
 ```
 
 Connect a Cloud Connector to your Subaccount and create the following destinations:
