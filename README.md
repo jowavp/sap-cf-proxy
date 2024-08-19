@@ -44,17 +44,12 @@ npm run deploy:cf
 npm run enable-ssh
 ```
 
-Now check the SAP BAP Cockpit for the correct setting for the connectivity proxy.
-
-> The `start-sshtunnel` command is currently forwarding the requests to:
-> `'connectivityproxy.internal.cf.eu10.hana.ondemand.com:20003'` .
-
 ### Connectivity Proxy
 
-Go to the SAP BTP Cockpit and open the details of the deployed app _sshenabler_. Navigate there to the Environment Variables.
+> By default the script `start-sshtunnel` is configured to forward the requests to:
+> `'connectivityproxy.internal.cf.eu10.hana.ondemand.com:20003'` .
 
-This is found by opening the cloud foundry space in the correct sub-account.
-Click on the deployed application `sshenabler` and click on the `Environment Variables` in the left-hand menu.
+Open the SAP BTP Cockpit and navigate to the details of the deployed app _sshenabler_. Open the Environment Variables of this app. They can be found by opening the cloud foundry space in the correct sub-account. Click on the deployed application `sshenabler` and click on the `Environment Variables` in the left-hand menu.
 
 ![Application menu](./documentation/application-menu.png)
 
