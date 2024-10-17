@@ -23,7 +23,7 @@ When you want to directly connect to e.g. a database running on-premise (Sybase 
 
 ## Prerequisites
 
-You are logged into your SAP BTP Cloud Foundry subaccount [via the cf CLI](https://blogs.sap.com/2021/04/21/connecting-from-sap-business-application-studio-to-sap-btp-cloud-foundry-environment/) and you have the [Multitarget Build Tool](https://sap.github.io/cloud-mta-build-tool/download/) installed (mbt).
+You are logged into your SAP BTP Cloud Foundry subaccount [via the cf CLI](https://blogs.sap.com/2021/04/21/connecting-from-sap-business-application-studio-to-sap-btp-cloud-foundry-environment/), you have the [Multitarget Build Tool](https://sap.github.io/cloud-mta-build-tool/download/) (mbt) installed ,and you have installed the [MultiApps CLI Plugin](https://help.sap.com/docs/btp/sap-business-technology-platform/install-multiapps-cli-plugin-in-cloud-foundry-environment?locale=en-US). If you’re going to use the SOCKS5 proxy (Forward TCP data), you’ll need to have Maven installed.
 
 ## Installation
 
@@ -96,12 +96,19 @@ npm start
 
 Go to the SAP BTP Cockpit and open the details of the deployed app _sshenabler_. Navigate there to the Environment Variables. Copy the content of the textbox _System Provided_ to a local file called _default-env.json_ in the directory _socks-proxy_.
 
-Then run the following commands in another terminal window. Make sure to change ON_PREMISE_HOST and ON_PREMISE_PORT to values that you see in the Cloud Connector configuration.
+Then, run the following commands in another terminal window. Make sure to change ON_PREMISE_HOST and ON_PREMISE_PORT to values that you see in the Cloud Connector configuration. To specify a particular cloud connector, set the variable CLOUD_CONNECTOR_LOCATION_ID.
 
 ```bash
 cd socks-proxy
-mvn compile
-ON_PREMISE_HOST=hostnameOfOnPremiseSystem ON_PREMISE_PORT=portOfOnPremiseSystem VCAP_SERVICES=$(jq '.VCAP_SERVICES' default-env.json|jq -c .) mvn compile exec:java -Dexec.mainClass="StartSocksProxy"
+
+# Set Environment
+ON_PREMISE_HOST=hostnameOfOnPremiseSystem
+ON_PREMISE_PORT=portOfOnPremiseSystem
+CLOUD_CONNECTOR_LOCATION_ID=cloudConnectorLocationId
+VCAP_SERVICES=$(jq '.VCAP_SERVICES' default-env.json|jq -c .)
+
+# Start the proxy
+mvn compile exec:java -Dexec.mainClass="StartSocksProxy"
 ```
 
 Now you can open your preferred database tool or also your application that uses JDBC to connect and just point it to _localhost:5050_.
