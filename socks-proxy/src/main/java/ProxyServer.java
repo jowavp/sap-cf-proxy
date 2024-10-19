@@ -26,61 +26,69 @@ public class ProxyServer {
     }
 
     public void run() throws IOException {
-        final byte[] request = new byte[1024];
-        byte[] reply = new byte[4096];
-
-        //noinspection InfiniteLoopStatement
         while (true) {
-            Socket client;
             try {
-                client = serverSocket.accept();
-                try (Socket socketToProxy = new DBSocketFactory(cloudConnectorLocationId, useSSHTunnel).createSocket()) {
-                    socketToProxy.connect(InetSocketAddress.createUnresolved(hostname, port));
-
-                    final InputStream streamFromServer = socketToProxy.getInputStream();
-                    final OutputStream streamToServer = socketToProxy.getOutputStream();
-
-                    final InputStream streamFromClient = client.getInputStream();
-                    final OutputStream streamToClient = client.getOutputStream();
-
-                    final Socket currentClient = client;
-                    Thread t = new Thread(() -> {
-                        int bytesRead;
-                        try {
-                            while (!currentClient.isClosed() && (bytesRead = streamFromClient.read(request)) != -1) {
-                                streamToServer.write(request, 0, bytesRead);
-                                streamToServer.flush();
-                            }
-                        } catch (IOException e) {
-                            LOGGER.throwing("ProxyServer", "run", e);
-                        }
-                    });
-
-                    t.start();
-
-                    int bytesRead;
-                    try {
-                        while ((bytesRead = streamFromServer.read(reply)) != -1) {
-                            streamToClient.write(reply, 0, bytesRead);
-                            streamToClient.flush();
-                        }
-                    } catch (IOException e) {
-                        LOGGER.throwing("ProxyServer", "run", e);
-                    }
-
-                    streamToClient.close();
-                } catch (IOException e) {
-                    LOGGER.throwing("ProxyServer", "run", e);
-                } finally {
-                    try {
-                        if (client != null)
-                            client.close();
-                    } catch (IOException e) {
-                        LOGGER.throwing("ProxyServer", "run", e);
-                    }
-                }
+                Socket client = serverSocket.accept();
+                // Handle each connection in a new thread
+                new Thread(() -> handleClientConnection(client)).start();
             } catch (IOException e) {
                 LOGGER.throwing("ProxyServer", "run", e);
+            }
+        }
+    }
+
+    private void handleClientConnection(Socket client) {
+        final byte[] request = new byte[1024];
+        final byte[] reply = new byte[4096];
+
+        try (Socket socketToProxy = new DBSocketFactory(cloudConnectorLocationId, useSSHTunnel).createSocket()) {
+            socketToProxy.connect(InetSocketAddress.createUnresolved(hostname, port));
+
+            final InputStream streamFromServer = socketToProxy.getInputStream();
+            final OutputStream streamToServer = socketToProxy.getOutputStream();
+
+            final InputStream streamFromClient = client.getInputStream();
+            final OutputStream streamToClient = client.getOutputStream();
+
+            // Create a thread to handle client to server
+            Thread clientToServer = new Thread(() -> {
+                try {
+                    int bytesRead;
+                    while (!client.isClosed() && (bytesRead = streamFromClient.read(request)) != -1) {
+                        streamToServer.write(request, 0, bytesRead);
+                        streamToServer.flush();
+                    }
+                } catch (IOException e) {
+                    LOGGER.throwing("ProxyServer", "clientToServer", e);
+                }
+            });
+
+            // Create a thread to handle server to client
+            Thread serverToClient = new Thread(() -> {
+                try {
+                    int bytesRead;
+                    while ((bytesRead = streamFromServer.read(reply)) != -1) {
+                        streamToClient.write(reply, 0, bytesRead);
+                        streamToClient.flush();
+                    }
+                } catch (IOException e) {
+                    LOGGER.throwing("ProxyServer", "serverToClient", e);
+                }
+            });
+
+            clientToServer.start();
+            serverToClient.start();
+
+            clientToServer.join();
+            serverToClient.join();
+
+        } catch (IOException | InterruptedException e) {
+            LOGGER.throwing("ProxyServer", "handleClientConnection", e);
+        } finally {
+            try {
+                if (client != null) client.close();
+            } catch (IOException e) {
+                LOGGER.throwing("ProxyServer", "handleClientConnection", e);
             }
         }
     }
