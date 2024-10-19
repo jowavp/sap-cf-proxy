@@ -86,7 +86,9 @@ public class ProxyServer {
             LOGGER.throwing("ProxyServer", "handleClientConnection", e);
         } finally {
             try {
+                // Ensure the client socket is closed and threads can exit
                 if (client != null) client.close();
+                LOGGER.info("Client disconnected, cleaning up");
             } catch (IOException e) {
                 LOGGER.throwing("ProxyServer", "handleClientConnection", e);
             }
