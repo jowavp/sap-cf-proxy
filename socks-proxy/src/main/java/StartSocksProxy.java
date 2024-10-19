@@ -11,8 +11,8 @@ public class StartSocksProxy {
         // default port 5050
         int port = (System.getenv("PORT") != null) ? Integer.parseInt(System.getenv("PORT")) : 5050;
         // default to using SSH tunnel
-        boolean useSSHTunnel = (System.getenv("USE_SSH_TUNNEL") != null) && Boolean.parseBoolean(System.getenv("USE_SSH_TUNNEL"));
-
+        boolean useSSHTunnel = (System.getenv("USE_SSH_TUNNEL") == null) || Boolean.parseBoolean(System.getenv("USE_SSH_TUNNEL"));
+        
         if (onPremiseHost != null && onPremisePort != null) {
             LOGGER.info("Starting up local SOCKS5 proxy to " + onPremiseHost + ":" + onPremisePort);
             ProxyServer proxy = new ProxyServer(port, onPremiseHost, Integer.parseInt(onPremisePort), cloudConnectorLocationId, useSSHTunnel);
