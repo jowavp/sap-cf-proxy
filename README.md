@@ -102,10 +102,10 @@ Then, run the following commands in another terminal window. Make sure to change
 cd socks-proxy
 
 # Set Environment
-ON_PREMISE_HOST=hostnameOfOnPremiseSystem
-ON_PREMISE_PORT=portOfOnPremiseSystem
-CLOUD_CONNECTOR_LOCATION_ID=cloudConnectorLocationId
-VCAP_SERVICES=$(jq '.VCAP_SERVICES' default-env.json|jq -c .)
+export ON_PREMISE_HOST=hostnameOfOnPremiseSystem \
+       ON_PREMISE_PORT=portOfOnPremiseSystem \
+       CLOUD_CONNECTOR_LOCATION_ID=cloudConnectorLocationId \
+       VCAP_SERVICES=$(jq -c '.VCAP_SERVICES' default-env.json)
 
 # Start the proxy
 mvn compile exec:java -Dexec.mainClass="StartSocksProxy"
